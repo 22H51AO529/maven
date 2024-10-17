@@ -1,0 +1,6 @@
+INDEX VERSION 1.134+C:\Users\kaila\OneDrive\Desktop\maven\.metadata\.plugins\org.eclipse.jdt.core
+753130481.index
+3381840057.index
+3413270776.index
+1865797976.index
+315487484.index
