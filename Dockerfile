@@ -1,29 +1,26 @@
-# Use Maven with JDK 8 for building the application
+# Use Maven image to build the application
 FROM maven:3.6.3-jdk-8 AS build
 
-# Set the working directory
+# Set the working directory inside the container
 WORKDIR /app
 
-# Copy the pom.xml file from the target directory
-COPY target/pom.xml .
+# Copy the contents of the current directory to /app in the container
+COPY . .
 
-# Download all dependencies (this helps with caching)
-RUN mvn dependency:go-offline
+# Move into the helloprint directory where the pom.xml is located
+WORKDIR /app/helloprint
 
-# Copy the rest of your source code
-COPY target/ .
-
-# Build the application
+# Run the Maven build
 RUN mvn clean package
 
 # Use OpenJDK for running the application
 FROM openjdk:8-jre
 
-# Set the working directory
+# Set the working directory for the runtime environment
 WORKDIR /app
 
-# Copy the jar file from the build stage
-COPY --from=build /app/target/helloworld-maven-0.0.1-SNAPSHOT-jar-with-dependencies.jar app.jar
+# Copy the packaged JAR from the build stage
+COPY --from=build /app/helloprint/target/*.jar /app/helloprint.jar
 
-# Run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Command to run the application
+CMD ["java", "-jar", "helloprint.jar"]
