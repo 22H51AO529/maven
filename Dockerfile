@@ -1,29 +1,29 @@
-# Use Maven to build the project
+# Use Maven with JDK 8 for building the application
 FROM maven:3.6.3-jdk-8 AS build
 
-# Set the working directory inside the container
+# Set the working directory
 WORKDIR /app
 
-# Copy only the pom.xml first
-COPY pom.xml .
+# Copy the pom.xml file from the target directory
+COPY target/pom.xml .
 
 # Download all dependencies (this helps with caching)
 RUN mvn dependency:go-offline
 
-# Copy the rest of the project
-COPY . .
+# Copy the rest of your source code
+COPY target/ .
 
-# Run Maven to clean and package the application
+# Build the application
 RUN mvn clean package
 
-# Use OpenJDK for the runtime
+# Use OpenJDK for running the application
 FROM openjdk:8-jre
 
-# Set the working directory to /app inside the container for the runtime
+# Set the working directory
 WORKDIR /app
 
-# Copy the JAR file from the build stage
-COPY --from=build /app/target/helloworld-maven-0.0.1-SNAPSHOT-jar-with-dependencies.jar .
+# Copy the jar file from the build stage
+COPY --from=build /app/target/helloworld-maven-0.0.1-SNAPSHOT-jar-with-dependencies.jar app.jar
 
-# Specify the entry point for the container
-ENTRYPOINT ["java", "-jar", "helloworld-maven-0.0.1-SNAPSHOT-jar-with-dependencies.jar"]
+# Run the application
+ENTRYPOINT ["java", "-jar", "app.jar"]
