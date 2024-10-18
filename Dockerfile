@@ -1,23 +1,26 @@
-# Use Maven to build the project
+# Use the official Maven image to build the application
 FROM maven:3.6.3-jdk-8 AS build
 
-# Set the working directory to /app inside the container
+# Set the working directory inside the container
 WORKDIR /app
 
-# Copy the contents of your local working directory (C:\Users\kaila\OneDrive\Desktop\maven) to /app in the container
-COPY . .
+# Copy the pom.xml file into the container
+COPY helloprint/pom.xml .
 
-# Run Maven to clean and package the application
+# Download all dependencies (this helps with caching)
+RUN mvn dependency:go-offline
+
+# Copy the source code into the container
+COPY helloprint/src ./src
+
+# Build the application
 RUN mvn clean package
 
-# Use OpenJDK for the runtime
+# Use OpenJDK for running the application
 FROM openjdk:8-jre
 
-# Set the working directory to /app inside the container for the runtime
-WORKDIR /app
+# Copy the built jar file from the build stage
+COPY --from=build /app/target/helloworld-maven-0.0.1-SNAPSHOT-jar-with-dependencies.jar /usr/local/bin/helloworld-maven.jar
 
-# Copy the packaged JAR file from the build stage
-COPY --from=build /app/target/helloworld-maven-0.0.1-SNAPSHOT-jar-with-dependencies.jar .
-
-# Specify the entry point for the container
-ENTRYPOINT ["java", "-jar", "helloworld-maven-0.0.1-SNAPSHOT-jar-with-dependencies.jar"]
+# Command to run the application
+CMD ["java", "-jar", "/usr/local/bin/helloworld-maven.jar"]
